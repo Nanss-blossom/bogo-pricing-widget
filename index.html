@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive BOGO Pricing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Inter', sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .pricing-container {
+      width: 462px;
+      height: 603px;
+      position: relative;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    
+    .pricing-container:hover {
+      transform: translateY(-5px);
+    }
+
+    .option-card {
+      position: absolute;
+      background: white;
+      border: 0.90px #C8C8C8 solid;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+    }
+
+    .option-card:hover {
+      border-color: #FF6B82;
+      box-shadow: 0 4px 15px rgba(255, 107, 130, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .option-card.selected {
+      border: 2px #FF6B82 solid;
+      background: #FFF9FA;
+      transform: scale(1.02);
+    }
+
+    .radio-button {
+      position: absolute;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .radio-button:hover {
+      transform: scale(1.1);
+    }
+
+    .radio-inner {
+      position: absolute;
+      background: #FF6B82;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .radio-button.selected .radio-inner {
+      opacity: 1;
+    }
+
+    .radio-button.selected {
+      border-color: #FF6B82;
+    }
+
+    .discount-badge {
+      background: #FF6B82;
+      border-radius: 1px;
+      position: absolute;
+      text-align: center;
+      color: white;
+      font-size: 12px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .discount-badge:hover {
+      background: #E55A75;
+      transform: scale(1.05);
+    }
+
+    .add-to-cart-btn {
+      width: 342px;
+      height: 40px;
+      padding: 10px;
+      left: 58px;
+      top: 497px;
+      position: absolute;
+      background: #FF6B82;
+      border-radius: 4px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .add-to-cart-btn:hover {
+      background: #E55A75;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 107, 130, 0.3);
+    }
+
+    .add-to-cart-btn:active {
+      transform: translateY(0px);
+    }
+
+    .cart-icon {
+      width: 16px;
+      height: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .popular-badge {
+      width: 119px;
+      height: 26px;
+      left: 276px;
+      top: 169px;
+      position: absolute;
+      background: #FF6B82;
+      border-bottom-right-radius: 4px;
+      border-bottom-left-radius: 4px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .variant-selector {
+      position: absolute;
+      background: white;
+      border-radius: 1.81px;
+      border: 0.90px #D9D9D9 solid;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .variant-selector:hover {
+      border-color: #FF6B82;
+      background: #FFF9FA;
+    }
+
+    .variant-selector.selected {
+      border-color: #FF6B82;
+      background: #FF6B82;
+      color: white;
+    }
+
+    .total-section {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #4CAF50;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .notification.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="pricing-container">
+    <!-- Header Accent Line -->
+    <div style="width: 129px; height: 7px; left: 271px; top: 169px; position: absolute; background: #D7445B"></div>
+    
+    <!-- Title -->
+    <div style="left: 159px; top: 39px; position: absolute; color: #FF6B82; font-size: 20px; font-family: Inter; font-weight: 600; word-wrap: break-word">YAY! It's BOGO</div>
+    
+    <!-- Option 1: 1 Unit -->
+    <div class="option-card" id="option1" style="width: 341px; height: 74.11px; left: 59px; top: 82px;" onclick="selectOption(1)">
+      <div class="radio-button" id="radio1" style="width: 14.46px; height: 14.46px; left: 22px; top: 24px; border-radius: 50%; border: 0.90px #DADADA solid;">
+        <div class="radio-inner" style="width: 9.04px; height: 9.04px; left: 1.71px; top: 1.71px;"></div>
+      </div>
+      <div style="left: 49.23px; top: 19.88px; position: absolute; color: black; font-size: 14px; font-family: Inter; font-weight: 600; word-wrap: break-word">1 Unit</div>
+      <div style="left: 49.23px; top: 39.77px; position: absolute; color: black; font-size: 12px; font-family: Inter; font-weight: 400; word-wrap: break-word">Standard Price</div>
+      <div style="left: 234px; top: 22px; position: absolute; color: black; font-size: 14.46px; font-family: Inter; font-weight: 500; word-wrap: break-word">$10.00 USD</div>
+      <div style="left: 234px; top: 41px; position: absolute; opacity: 0.30; color: black; font-size: 10px; font-family: Inter; font-weight: 400; text-decoration: line-through; word-wrap: break-word">$24.00 USD</div>
+      <div class="discount-badge" style="width: 55px; height: 17px; left: 98px; top: 21px;">10% Off</div>
+    </div>
+
+    <!-- Option 2: 2 Units (Most Popular) -->
+    <div class="option-card selected" id="option2" style="width: 341px; height: 174.11px; left: 59px; top: 176px;" onclick="selectOption(2)">
+      <div class="radio-button selected" id="radio2" style="width: 14.46px; height: 14.46px; left: 22px; top: 31.85px; border-radius: 50%; border: 0.90px #FF6B82 solid;">
+        <div class="radio-inner" style="width: 9.04px; height: 9.04px; left: 1.71px; top: 1.71px;"></div>
+      </div>
+      <div style="left: 49.23px; top: 29px; position: absolute; color: black; font-size: 14px; font-family: Inter; font-weight: 600; word-wrap: break-word">2 Unit</div>
+      <div style="left: 234px; top: 24px; position: absolute; color: black; font-size: 14.46px; font-family: Inter; font-weight: 500; word-wrap: break-word">$18.00 USD</div>
+      <div style="left: 234px; top: 43px; position: absolute; opacity: 0.30; color: black; font-size: 10px; font-family: Inter; font-weight: 400; text-decoration: line-through; word-wrap: break-word">$24.00 USD</div>
+      <div class="discount-badge" style="width: 55px; height: 17px; left: 98px; top: 30px;">20% Off</div>
+      
+      <!-- Variant Selectors -->
+      <div style="left: 66.23px; top: 69.07px; position: absolute; color: black; font-size: 9.94px; font-family: Inter; font-weight: 400; word-wrap: break-word">Size</div>
+      <div style="left: 139.44px; top: 69.07px; position: absolute; color: black; font-size: 9.94px; font-family: Inter; font-weight: 400; word-wrap: break-word">Colour</div>
+      
+      <div class="variant-selector selected" style="width: 65.98px; height: 25.31px; left: 66.23px; top: 88.05px;" onclick="event.stopPropagation(); selectSize(1, 'S')">
+        <span style="color: white; font-size: 10.85px; font-family: Inter; font-weight: 400;">S</span>
+      </div>
+      <div class="variant-selector" style="width: 72.30px; height: 25.31px; left: 139.44px; top: 88.05px;" onclick="event.stopPropagation(); selectColor(1, 'Black')">
+        <span style="color: black; font-size: 10.85px; font-family: Inter; font-weight: 400;">Black</span>
+      </div>
+      
+      <div class="variant-selector" style="width: 65.98px; height: 25.31px; left: 66.23px; top: 120.59px;" onclick="event.stopPropagation(); selectSize(2, 'S')">
+        <span style="color: black; font-size: 10.85px; font-family: Inter; font-weight: 400;">S</span>
+      </div>
+      <div class="variant-selector" style="width: 72.30px; height: 25.31px; left: 139.44px; top: 120.59px;" onclick="event.stopPropagation(); selectColor(2, 'Colour')">
+        <span style="color: black; font-size: 10.85px; font-family: Inter; font-weight: 400;">Colour</span>
+      </div>
+      
+      <div style="left: 49.06px; top: 98px; position: absolute; color: black; font-size: 9.04px; font-family: Inter; font-weight: 400; word-wrap: break-word">#1</div>
+      <div style="left: 48.15px; top: 130.53px; position: absolute; color: black; font-size: 9.04px; font-family: Inter; font-weight: 400; word-wrap: break-word">#2</div>
+    </div>
+
+    <!-- Popular Badge -->
+    <div class="popular-badge">
+      <div style="left: 11px; top: 7px; position: absolute; text-align: center; color: white; font-size: 12px; font-family: Inter; font-weight: 700; word-wrap: break-word">MOST POPULAR</div>
+    </div>
+
+    <!-- Option 3: 3 Units -->
+    <div class="option-card" id="option3" style="width: 341px; height: 74.11px; left: 59px; top: 371px;" onclick="selectOption(3)">
+      <div class="radio-button" id="radio3" style="width: 14.46px; height: 14.46px; left: 21.69px; top: 30px; border-radius: 50%; border: 0.90px #DADADA solid;">
+        <div class="radio-inner" style="width: 9.04px; height: 9.04px; left: 1.71px; top: 1.71px;"></div>
+      </div>
+      <div style="left: 48.23px; top: 28px; position: absolute; color: black; font-size: 14.46px; font-family: Inter; font-weight: 600; word-wrap: break-word">3 Unit</div>
+      <div style="left: 234px; top: 13px; position: absolute; color: black; font-size: 14.46px; font-family: Inter; font-weight: 500; word-wrap: break-word">$24.00 USD</div>
+      <div style="left: 234px; top: 32px; position: absolute; opacity: 0.30; color: black; font-size: 10px; font-family: Inter; font-weight: 400; text-decoration: line-through; word-wrap: break-word">$24.00 USD</div>
+      <div class="discount-badge" style="width: 55px; height: 17px; left: 97px; top: 18px;">30% Off</div>
+    </div>
+
+    <!-- Free Delivery & Total -->
+    <div class="total-section">
+      <div style="color: #FF6B82; font-size: 14px; font-family: Inter; font-weight: 500; margin-bottom: 10px;">Free Delivery</div>
+      <div><span style="color: black; font-size: 14px; font-family: Inter; font-weight: 400;">Total : $</span><span id="totalPrice" style="color: black; font-size: 14px; font-family: Inter; font-weight: 500;">18.00 USD</span></div>
+    </div>
+
+    <!-- Add to Cart Button -->
+    <button class="add-to-cart-btn" onclick="addToCart()">
+      <div class="cart-icon">
+        <div style="width: 9.33px; height: 9.33px; left: 3.33px; top: 3.33px; position: absolute; outline: 2px white solid; outline-offset: -1px"></div>
+      </div>
+      <div style="color: white; font-size: 12px; font-weight: 500;">Add to Cart</div>
+    </button>
+
+    <!-- Footer -->
+    <div style="left: 271px; top: 560px; position: absolute; color: rgba(0, 0, 0, 0.40); font-size: 12px; font-family: Inter; font-style: italic; font-weight: 400;">@ Powered by Pumper</div>
+  </div>
+
+  <!-- Notification -->
+  <div class="notification" id="notification"></div>
+
+  <script>
+    let selectedOption = 2;
+    let selectedVariants = {
+      1: { size: 'S', color: 'Black' },
+      2: { size: 'S', color: 'Colour' }
+    };
+
+    const prices = {
+      1: 10.00,
+      2: 18.00,
+      3: 24.00
+    };
+
+    function selectOption(optionNum) {
+      // Remove selected class from all options
+      document.querySelectorAll('.option-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      document.querySelectorAll('.radio-button').forEach(radio => {
+        radio.classList.remove('selected');
+      });
+
+      // Add selected class to chosen option
+      document.getElementById(`option${optionNum}`).classList.add('selected');
+      document.getElementById(`radio${optionNum}`).classList.add('selected');
+
+      selectedOption = optionNum;
+      updateTotal();
+
+      // Show feedback
+      showNotification(`Selected ${optionNum} unit${optionNum > 1 ? 's' : ''} option!`);
+    }
+
+    function selectSize(itemNum, size) {
+      if (selectedOption !== 2) return;
+      
+      selectedVariants[itemNum].size = size;
+      
+      // Update UI - remove selected from all size selectors for this item
+      const sizeSelectors = document.querySelectorAll('.variant-selector');
+      sizeSelectors.forEach(selector => {
+        if (selector.textContent.trim() === 'S' || selector.textContent.trim() === 'M' || selector.textContent.trim() === 'L') {
+          selector.classList.remove('selected');
+          selector.style.background = 'white';
+          selector.style.color = 'black';
+        }
+      });
+      
+      // Add selected to clicked selector
+      event.target.closest('.variant-selector').classList.add('selected');
+      showNotification(`Size ${size} selected for item #${itemNum}`);
+    }
+
+    function selectColor(itemNum, color) {
+      if (selectedOption !== 2) return;
+      
+      selectedVariants[itemNum].color = color;
+      
+      // Update UI - remove selected from all color selectors for this item
+      const colorSelectors = document.querySelectorAll('.variant-selector');
+      colorSelectors.forEach(selector => {
+        if (selector.textContent.trim() === 'Black' || selector.textContent.trim() === 'Colour') {
+          selector.classList.remove('selected');
+          selector.style.background = 'white';
+          selector.style.color = 'black';
+        }
+      });
+      
+      // Add selected to clicked selector
+      event.target.closest('.variant-selector').classList.add('selected');
+      showNotification(`Color ${color} selected for item #${itemNum}`);
+    }
+
+    function updateTotal() {
+      const totalElement = document.getElementById('totalPrice');
+      const price = prices[selectedOption];
+      totalElement.textContent = `${price.toFixed(2)} USD`;
+    }
+
+    function addToCart() {
+      let cartMessage = `Added ${selectedOption} unit${selectedOption > 1 ? 's' : ''} to cart`;
+      if (selectedOption === 2) {
+        cartMessage += ` (${selectedVariants[1].size}/${selectedVariants[1].color}, ${selectedVariants[2].size}/${selectedVariants[2].color})`;
+      }
+      cartMessage += ` - $${prices[selectedOption].toFixed(2)}`;
+      
+      showNotification(cartMessage, 'success');
+      
+      // Add some visual feedback to the button
+      const btn = document.querySelector('.add-to-cart-btn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<div style="color: white; font-size: 12px; font-weight: 500;">Added! ✓</div>';
+      btn.style.background = '#4CAF50';
+      
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.background = '#FF6B82';
+      }, 2000);
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.background = type === 'success' ? '#4CAF50' : '#2196F3';
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    // Initialize
+    updateTotal();
+  </script>
+</body>
+</html>
